@@ -23,6 +23,7 @@ import {
   Send,
   GiftIcon,
   Save,
+  Handshake,
 } from "lucide-react";
 
 export const links = [
@@ -104,6 +105,16 @@ export const links = [
         name: "manage admin",
         link: "/manage-admin",
         icon: <UserLock className="w-4 h-4" />,
+        permissions: [
+          "admin_management.read",
+          "admin_management.write",
+          "admin_management.create",
+        ],
+      },
+      {
+        name: "partner events",
+        link: "/manage-partner-events",
+        icon: <Handshake className="w-4 h-4" />,
         permissions: [
           "admin_management.read",
           "admin_management.write",
