@@ -6,7 +6,7 @@ import { links } from "@/lib/constants";
 import { canAccess } from "@/lib/helpers/canAccess";
 import { RootState } from "@/store";
 import { useSelector } from "react-redux";
-import { useDisputeNotifications } from "@/lib/hooks/useDisputeNotifications";
+// import { useDisputeNotifications } from "@/lib/hooks/useDisputeNotifications";
 
 interface DashboardSidebarProps {
   isSidebarOpen: boolean;
@@ -14,13 +14,10 @@ interface DashboardSidebarProps {
 }
 
 const Sidebar = ({ isSidebarOpen }: DashboardSidebarProps) => {
-  const { notifications, isConnected } = useDisputeNotifications();
+  // const { notifications, isConnected } = useDisputeNotifications();
   const { user } = useSelector((state: RootState) => state.auth);
 
   const userPermissions = user?.permissions || [];
-
-  console.log("isConnected", isConnected);
-  console.log("notifications", notifications);
 
   return (
     <aside
