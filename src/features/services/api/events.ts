@@ -139,14 +139,29 @@ export const getPartnerEventTickets = async ({
   eventId,
   page,
   limit,
+  search,
+  attendance_status,
+  payment_status,
 }: {
   eventId: string;
   page: number;
   limit: number;
+  search?: string;
+  attendance_status?: string;
+  payment_status?: string;
 }) => {
   const { data } = await axiosInstance.get<PartnerEventTicketsResponse>(
     `/partner/${eventId}/tickets`,
-    { params: { page, limit } },
+    {
+      params: {
+        eventId,
+        page,
+        limit,
+        ...(search && { search }),
+        ...(attendance_status && { attendance_status }),
+        ...(payment_status && { payment_status }),
+      },
+    },
   );
 
   return data;

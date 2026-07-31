@@ -7,6 +7,7 @@ import StatusBubble from "@/components/atoms/StatusBubble/StatusBubble";
 import TableLoader from "@/components/atoms/skeleton/TableLoader";
 import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import PaginationComponent from "@/components/molecules/PaginationComponent/PaginationComponent";
+import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import {
   Table,
   TableBody,
@@ -15,17 +16,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useGetPartnerEventTickets } from "../../hooks/useGetPartnerEventTickets";
 import { useValidatePartnerTicket } from "../../hooks/useValidatePartnerTicket";
 
 const PartnerEventTicketsTable = ({ eventId }: { eventId: string }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [attendanceStatus, setAttendanceStatus] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const { data, isLoading } = useGetPartnerEventTickets(
     eventId,
     currentPage,
     limit,
+    search,
+    attendanceStatus,
+    paymentStatus,
   );
   const validation = useValidatePartnerTicket(eventId);
 
@@ -65,6 +80,57 @@ const PartnerEventTicketsTable = ({ eventId }: { eventId: string }) => {
         <p className="text-sm text-gray-500 dark:text-gray-400">
           {data?.data.pagination.total ?? 0} tickets issued
         </p>
+      </div>
+
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="min-w-64 flex-1">
+          <SearchInput
+            value={searchInput}
+            placeholder="Search tickets"
+            handleChange={setSearchInput}
+            handleClear={() => {
+              setSearchInput("");
+              setSearch("");
+              setCurrentPage(1);
+            }}
+            onSubmit={() => {
+              setSearch(searchInput.trim());
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+        <Select
+          value={attendanceStatus || "all"}
+          onValueChange={(value) => {
+            setAttendanceStatus(value === "all" ? "" : value);
+            setCurrentPage(1);
+          }}
+        >
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Attendance status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All attendance</SelectItem>
+            <SelectItem value="Pending">Pending</SelectItem>
+            <SelectItem value="Attended">Attended</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={paymentStatus || "all"}
+          onValueChange={(value) => {
+            setPaymentStatus(value === "all" ? "" : value);
+            setCurrentPage(1);
+          }}
+        >
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="Payment status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All payments</SelectItem>
+            <SelectItem value="confirmed">Confirmed</SelectItem>
+            <SelectItem value="unconfirmed">Unconfirmed</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="overflow-x-auto rounded-lg border dark:border-gray-800">
@@ -129,7 +195,7 @@ const PartnerEventTicketsTable = ({ eventId }: { eventId: string }) => {
                         disabled={isValidated}
                         onClick={() => setSelectedTicketId(ticket.ticket_id)}
                       >
-                        {isValidated ? "Validated" : "Validate"}
+                        {isValidated ? "Invalidated" : "Invalidate"}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -173,8 +239,8 @@ const PartnerEventTicketsTable = ({ eventId }: { eventId: string }) => {
         onCancel={closeConfirmation}
         onConfirm={handleValidate}
         isPending={validation.isPending}
-        title="Validate Ticket"
-        description={`Confirm entry for ticket ${selectedTicketId ?? ""}? This will mark the ticket as attended.`}
+        title="Invalidate Ticket"
+        description={`Are you sure you want to invalidate ticket ${selectedTicketId ?? ""}?`}
       />
     </section>
   );
