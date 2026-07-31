@@ -10,6 +10,10 @@ import { ApiErrorResponse } from "@/lib/types";
 import { createAuthCookie } from "@/lib/helpers/cookie";
 import { setUser } from "@/store/features/auth/authSlice";
 import { promiseErrorFunction } from "@/lib/helpers/promiseError";
+import {
+  isRestrictedEventAdmin,
+  RESTRICTED_EVENT_PATH,
+} from "../constants/restrictedAccess";
 
 export const useVerifyLogin = () => {
   const router = useRouter();
@@ -28,7 +32,11 @@ export const useVerifyLogin = () => {
       createAuthCookie("walletwiseToken", token);
       dispatch(setUser(adminDetails));
       toast.success("Login success");
-      router.push(`/overview`);
+      router.push(
+        isRestrictedEventAdmin(adminDetails?.id)
+          ? RESTRICTED_EVENT_PATH
+          : "/overview",
+      );
     },
     onError: (error: ApiErrorResponse) => {
       console.log("error logging in", error);
