@@ -29,7 +29,7 @@ const StatusBubble = ({ status }: { status: string }) => {
   return (
     <div
       className={`rounded-full px-3 py-1 text-center w-fit min-w-32 whitespace-nowrap text-sm ${
-        statusStyles[status] || "text-red-400 bg-red-50"
+        statusStyles[status.toLowerCase()] || "text-red-400 bg-red-50"
       }`}
     >
       {status}
