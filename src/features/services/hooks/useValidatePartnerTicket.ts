@@ -11,7 +11,7 @@ export const useValidatePartnerTicket = (eventId: string) => {
   return useMutation({
     mutationFn: validatePartnerTicket,
     onSuccess: (response) => {
-      toast.success(response?.message || "Ticket validated successfully");
+      toast.success(response?.message || "Ticket invalidated successfully");
       queryClient.invalidateQueries({
         queryKey: ["partner event tickets", eventId],
       });

@@ -3,6 +3,7 @@ import { FormEvent } from "react";
 
 interface SearchInputProps {
   value: string | number;
+  placeholder?: string;
   handleChange: (value: string) => void;
   handleClear: () => void;
   onSubmit: (e: FormEvent) => void;
@@ -10,6 +11,7 @@ interface SearchInputProps {
 
 const SearchInput = ({
   value,
+  placeholder = "Search",
   handleChange,
   handleClear,
   onSubmit,
@@ -32,6 +34,7 @@ const SearchInput = ({
         name="search"
         id="search"
         value={value}
+        placeholder={placeholder}
         onChange={(e) => handleChange(e.target.value)}
         className="outline-none flex-1 text-gray-500"
       />
