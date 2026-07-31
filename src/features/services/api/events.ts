@@ -1,7 +1,7 @@
 import { axiosInstance } from "@/lib/axiosInstance";
 import { formatCreatedAt } from "@/lib/helpers/dateFormats";
 import { fetchDataProps } from "@/lib/types";
-import { CreateEventPayload } from "../types";
+import { CreateEventPayload, PartnerEventTicketsResponse } from "../types";
 
 export const getEvents = async ({
   currentPage,
@@ -49,14 +49,119 @@ export const deleteEvent = async ({ eventId }: { eventId: string }) => {
   }
 };
 
+export const updatePartnerEventStatus = async ({
+  eventId,
+  status,
+}: {
+  eventId: string;
+  status: "Approved" | "Declined";
+}) => {
+  const { data } = await axiosInstance.patch(`/partner/events/${eventId}`, {
+    status,
+  });
+
+  return data;
+};
+
 export const getEventInfo = async ({ eventId }: { eventId: string }) => {
   try {
     const url = `/events/${eventId}`;
     const { data } = await axiosInstance.get(url);
-    return data?.data;
+    const eventInfo = data?.data;
+
+    if (!eventInfo?.event || !Array.isArray(eventInfo.event.ticket_types)) {
+      return eventInfo;
+    }
+
+    const ticketTypes = eventInfo.event.ticket_types.reduce(
+      (
+        normalized: Record<
+          string,
+          { price: number; quantity: number; discountPrice: number }
+        >,
+        ticket: { type: string; price: number; capacity: number },
+      ) => {
+        normalized[ticket.type] = {
+          price: ticket.price,
+          quantity: ticket.capacity,
+          discountPrice: 0,
+        };
+        return normalized;
+      },
+      {},
+    );
+
+    const ticketSales = eventInfo.event.ticket_types.reduce(
+      (
+        normalized: Record<
+          string,
+          {
+            sold: number;
+            price: number;
+            total_quantity: number;
+            available: number;
+          }
+        >,
+        ticket: { type: string; price: number; capacity: number },
+        index: number,
+      ) => {
+        const sale = eventInfo.stats?.ticket_sales?.[index] ?? {};
+        const sold = sale.sold ?? 0;
+
+        normalized[ticket.type.toLowerCase()] = {
+          sold,
+          price: sale.price ?? ticket.price,
+          total_quantity: ticket.capacity,
+          available: Math.max(ticket.capacity - sold, 0),
+        };
+        return normalized;
+      },
+      {},
+    );
+
+    return {
+      ...eventInfo,
+      event: {
+        ...eventInfo.event,
+        ticket_types: ticketTypes,
+      },
+      stats: {
+        ...eventInfo.stats,
+        ticket_sales: ticketSales,
+      },
+    };
   } catch (error) {
     throw error;
   }
+};
+
+export const getPartnerEventTickets = async ({
+  eventId,
+  page,
+  limit,
+}: {
+  eventId: string;
+  page: number;
+  limit: number;
+}) => {
+  const { data } = await axiosInstance.get<PartnerEventTicketsResponse>(
+    `/partner/${eventId}/tickets`,
+    { params: { page, limit } },
+  );
+
+  return data;
+};
+
+export const validatePartnerTicket = async ({
+  ticketId,
+}: {
+  ticketId: string;
+}) => {
+  const { data } = await axiosInstance.post("/partner/validate-ticket", {
+    ticketId,
+  });
+
+  return data;
 };
 
 export function buildEventFormData(payload: CreateEventPayload): FormData {

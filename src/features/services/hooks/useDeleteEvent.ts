@@ -23,6 +23,9 @@ export const useDeleteEvent = () => {
       queryClient.invalidateQueries({
         queryKey: ["events"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["partner info"],
+      });
     },
     onError: (error: ApiErrorResponse) => {
       promiseErrorFunction(error);

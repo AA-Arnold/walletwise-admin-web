@@ -9,7 +9,6 @@ import { totalTickets } from "../../helpers/totalTickets";
 import { numberWithCommas } from "@/lib/helpers";
 
 import {
-  BarrelIcon,
   Calendar,
   CopyIcon,
   EditIcon,
@@ -30,7 +29,6 @@ const EventAdminCard = ({
   onEdit,
   onDelete,
   onToggleVisibility,
-  onViewStats,
   onViewAttendees,
 }: EventAdminCardProps) => {
   const [visible, setVisible] = useState(true);
@@ -51,6 +49,23 @@ const EventAdminCard = ({
   const tickets = Object.entries(data?.ticket_types ?? {})?.filter(
     ([, v]) => v !== undefined,
   ) as [string, TicketType][];
+  const formFields = Object.entries(data?.form_settings ?? {}).filter(
+    ([field, settings]) =>
+      field !== "custom_fields" &&
+      settings &&
+      !Array.isArray(settings),
+  ) as [string, { input_type: string; is_required: boolean }][];
+  const formatLabel = (value: string) =>
+    value
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (character) => character.toUpperCase());
+  const formatDateTime = (value?: string | null) =>
+    value
+      ? new Intl.DateTimeFormat("en-NG", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(value))
+      : "—";
 
   return (
     <div className="w-full max-w-6xl mx-auto rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 font-sans">
@@ -146,6 +161,74 @@ const EventAdminCard = ({
         <div className="h-px bg-gray-100 dark:bg-white/10" />
 
         <div>
+          <p className="mb-3 text-[10px] uppercase tracking-widest text-gray-400 dark:text-gray-500">
+            Event Information
+          </p>
+          <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              ["Category", data?.category],
+              ["Status", data?.status],
+              ["Start Date", formatDateTime(data?.date)],
+              ["Start Time", formatDateTime(data?.time)],
+              ["End Time", formatDateTime(data?.end_time)],
+              [
+                "Service Fee",
+                data?.service_fee ? `${data.service_fee}%` : "—",
+              ],
+              ["Address", data?.address],
+              ["Promo", data?.promo],
+              ["Created By", data?.created_by_type],
+              ["Partner ID", data?.partner_id],
+              ["Updated", formatDateTime(data?.updated_at)],
+            ].map(([label, value]) => (
+              <div
+                key={label}
+                className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 dark:border-white/10 dark:bg-white/5"
+              >
+                <dt className="text-[10px] uppercase tracking-wide text-gray-400">
+                  {label}
+                </dt>
+                <dd className="mt-1 break-words text-sm text-gray-700 dark:text-gray-200">
+                  {value || "—"}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        {data?.refund_policy && (
+          <div>
+            <p className="mb-1 text-[10px] uppercase tracking-widest text-gray-400">
+              Refund Policy
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {data.refund_policy}
+            </p>
+          </div>
+        )}
+
+        {formFields.length > 0 && (
+          <div>
+            <p className="mb-2 text-[10px] uppercase tracking-widest text-gray-400">
+              Registration Form
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {formFields.map(([field, settings]) => (
+                <span
+                  key={field}
+                  className="rounded-full border px-3 py-1 text-xs text-gray-600 dark:border-gray-600 dark:text-gray-300"
+                >
+                  {formatLabel(field)} · {settings.input_type}
+                  {settings.is_required ? " · Required" : " · Optional"}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="h-px bg-gray-100 dark:bg-white/10" />
+
+        <div>
           <p className="text-[10px] uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">
             Ticket Types
           </p>
@@ -171,11 +254,6 @@ const EventAdminCard = ({
           icon={visible ? <EyeOffIcon /> : <EyeIcon />}
           label={visible ? "Hide Event" : "Show Event"}
           onClick={handleToggleVisibility}
-        />
-        <ActionButton
-          icon={<BarrelIcon />}
-          label="View Stats"
-          onClick={onViewStats}
         />
         <ActionButton
           icon={<UsersIcon />}

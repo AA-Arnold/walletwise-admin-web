@@ -1,29 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { getPartnerInfo } from "../api";
-import { Partner, PartnerEvent, PartnerInfo } from "../types";
+import { PartnerInfo } from "../types";
 
 const normalizePartnerInfo = (response: unknown): PartnerInfo | undefined => {
   if (!response || typeof response !== "object") return undefined;
 
   const responseBody = response as Record<string, unknown>;
-  const data =
-    responseBody.data && typeof responseBody.data === "object"
-      ? (responseBody.data as Record<string, unknown>)
-      : responseBody;
-  const partner =
-    data.partner && typeof data.partner === "object"
-      ? (data.partner as Partner)
-      : (data as unknown as Partner);
-  const events = Array.isArray(data.events)
-    ? (data.events as PartnerEvent[])
-    : Array.isArray((partner as Partner & { events?: unknown }).events)
-      ? ((partner as Partner & { events: PartnerEvent[] }).events ?? [])
-      : [];
+  if (!responseBody.data || typeof responseBody.data !== "object") {
+    return undefined;
+  }
 
-  if (!partner?.id) return undefined;
+  const data = responseBody.data as Record<string, unknown>;
+  if (!data.partner || typeof data.partner !== "object") return undefined;
 
-  return { ...partner, events };
+  const partner = data.partner as PartnerInfo;
+  if (!partner.id) return undefined;
+
+  return {
+    ...partner,
+    events: Array.isArray(data.events)
+      ? (data.events as PartnerInfo["events"])
+      : [],
+    pagination: data.pagination as PartnerInfo["pagination"],
+  };
 };
 
 export const useGetPartnerInfo = (partnerId: string) => {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarX, ExternalLink } from "lucide-react";
+import { CalendarX } from "lucide-react";
 
 import StatusBubble from "@/components/atoms/StatusBubble/StatusBubble";
 import {
@@ -11,8 +11,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PartnerEvent } from "../../types";
+import EventActionCell from "@/features/services/components/EventActionCell/EventActionCell";
 
 const PartnerEventsTable = ({ events }: { events: PartnerEvent[] }) => {
+  const formatDate = (date: string) =>
+    new Intl.DateTimeFormat("en-NG", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date(date));
+
   if (events.length === 0) {
     return (
       <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 px-6 text-center dark:border-gray-700">
@@ -35,52 +43,35 @@ const PartnerEventsTable = ({ events }: { events: PartnerEvent[] }) => {
         <TableHeader className="bg-gray-50 dark:bg-gray-800">
           <TableRow>
             <TableHead>Event</TableHead>
+            <TableHead>Category</TableHead>
             <TableHead>Date</TableHead>
-            <TableHead>Time</TableHead>
-            <TableHead>Location</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Created</TableHead>
             <TableHead className="text-right">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {events.map((event, index) => {
-            const eventId = event.event_id || String(event.id || "");
-
-            return (
-              <TableRow key={eventId || `${event.title}-${index}`}>
-                <TableCell className="font-medium">{event.title}</TableCell>
-                <TableCell>
-                  {event.date
-                    ? new Date(event.date).toLocaleDateString()
-                    : "—"}
-                </TableCell>
-                <TableCell>{event.time || "—"}</TableCell>
-                <TableCell className="max-w-64 truncate">
-                  {event.address || "—"}
-                </TableCell>
-                <TableCell>
-                  {event.status ? (
-                    <StatusBubble status={event.status} />
-                  ) : (
-                    "—"
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  {eventId ? (
-                    <Link
-                      href={`/services/events/info/${eventId}`}
-                      className="inline-flex items-center gap-2 font-medium text-[#5c24cc] hover:underline dark:text-purple-400"
-                    >
-                      View event
-                      <ExternalLink className="h-4 w-4" />
-                    </Link>
-                  ) : (
-                    "—"
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {events.map((event) => (
+            <TableRow key={event.id}>
+              <TableCell className="font-medium">
+                <Link
+                  href={`/services/events/info/${event.id}`}
+                  className="text-[#5c24cc] hover:underline dark:text-purple-400"
+                >
+                  {event.name}
+                </Link>
+              </TableCell>
+              <TableCell>{event.category}</TableCell>
+              <TableCell>{formatDate(event.date)}</TableCell>
+              <TableCell>
+                <StatusBubble status={event.status} />
+              </TableCell>
+              <TableCell>{formatDate(event.created_at)}</TableCell>
+              <TableCell className="text-right">
+                <EventActionCell eventId={event.id} status={event.status} />
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>
