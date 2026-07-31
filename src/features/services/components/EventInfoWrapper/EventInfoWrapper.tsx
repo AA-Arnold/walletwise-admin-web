@@ -15,6 +15,7 @@ import EventAttendeesTable from "../EventAttendeesTable/EventAttendeesTable";
 import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import { eventBreadcrumb } from "../../constants/events";
 import PartnerEventTicketsTable from "../PartnerEventTicketsTable/PartnerEventTicketsTable";
+import InvalidateTicketForm from "../InvalidateTicketForm/InvalidateTicketForm";
 
 const EventInfoWrapper = ({ eventId }: { eventId: string }) => {
   const router = useRouter();
@@ -54,6 +55,11 @@ const EventInfoWrapper = ({ eventId }: { eventId: string }) => {
       value: "tickets",
       content: <PartnerEventTicketsTable eventId={eventId} />,
     },
+    {
+      label: "Invalidate Ticket",
+      value: "invalidate-ticket",
+      content: <InvalidateTicketForm eventId={eventId} />,
+    },
   ];
 
   return (
@@ -70,7 +76,7 @@ const EventInfoWrapper = ({ eventId }: { eventId: string }) => {
             tabs={eventViews}
             defaultTab="event"
             onClick={(view) => {
-              if (view === "tickets") setShowAttendees(false);
+              if (view !== "event") setShowAttendees(false);
             }}
           />
           <ConfirmAction
