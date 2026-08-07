@@ -70,9 +70,9 @@ export const Column = [
         >
           {row.original.title}
         </Link>
-        <p className="mt-1 max-w-64 truncate text-xs text-gray-500">
+        <Link href={`/services/events/info/${row.original.event_id}`} className="mt-1 block max-w-64 truncate text-xs text-gray-500 hover:underline">
           {row.original.event_id}
-        </p>
+        </Link>
       </div>
     ),
   }),

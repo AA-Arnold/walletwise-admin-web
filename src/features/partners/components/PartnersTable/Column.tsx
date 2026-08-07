@@ -1,4 +1,5 @@
 import { ArrowUpDown } from "lucide-react";
+import Link from "next/link";
 import { CellContext, createColumnHelper, Table } from "@tanstack/react-table";
 
 import TableDate from "@/components/atoms/TableDate/TableDate";
@@ -56,6 +57,11 @@ export const PartnerColumns = [
   },
   columnHelper.accessor("company_name", {
     header: sortableHeader("Company Name"),
+    cell: ({ row }) => (
+      <Link href={`/manage-partner-events/info/${row.original.id}`} className="font-medium text-[#5c24cc] hover:underline dark:text-purple-400">
+        {row.original.company_name}
+      </Link>
+    ),
   }),
   columnHelper.accessor("email", {
     header: sortableHeader("Email"),

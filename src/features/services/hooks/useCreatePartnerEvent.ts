@@ -1,5 +1,5 @@
 import { SubmitEvent, useCallback, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -36,6 +36,7 @@ const initialPayload: PartnerEventPayload = {
 
 export const useCreatePartnerEvent = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [form, setForm] = useState(initialPayload);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
@@ -171,6 +172,7 @@ export const useCreatePartnerEvent = () => {
       setHeadliners([]);
       setPrizes([]);
       setCustomFields([]);
+      router.push("/services/events");
     },
     onError: (error: ApiErrorResponse) => promiseErrorFunction(error),
   });

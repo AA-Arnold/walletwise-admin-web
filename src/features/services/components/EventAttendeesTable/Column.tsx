@@ -1,4 +1,5 @@
 import { ArrowUpDown } from "lucide-react";
+import Link from "next/link";
 import { CellContext, createColumnHelper, Table } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
@@ -140,6 +141,11 @@ export const Column = [
         </Button>
       );
     },
+    cell: ({ row }) => (
+      <Link href={`/manage-user/info/${row.original.user_id}`} className="text-[#5c24cc] hover:underline dark:text-purple-400">
+        {row.original.first_name}
+      </Link>
+    ),
   }),
   columnHelper.accessor("last_name", {
     header: ({ column }) => {
@@ -153,6 +159,11 @@ export const Column = [
         </Button>
       );
     },
+    cell: ({ row }) => (
+      <Link href={`/manage-user/info/${row.original.user_id}`} className="text-[#5c24cc] hover:underline dark:text-purple-400">
+        {row.original.last_name}
+      </Link>
+    ),
   }),
   columnHelper.accessor("user_tag", {
     header: ({ column }) => {
@@ -166,6 +177,11 @@ export const Column = [
         </Button>
       );
     },
+    cell: ({ row }) => (
+      <Link href={`/manage-user/info/${row.original.user_id}`} className="text-[#5c24cc] hover:underline dark:text-purple-400">
+        {row.original.user_tag}
+      </Link>
+    ),
   }),
   columnHelper.accessor("phone_number", {
     header: ({ column }) => {

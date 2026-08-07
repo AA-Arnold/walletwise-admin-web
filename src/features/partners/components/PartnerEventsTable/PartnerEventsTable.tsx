@@ -60,6 +60,12 @@ const PartnerEventsTable = ({ events }: { events: PartnerEvent[] }) => {
                 >
                   {event.name}
                 </Link>
+                <Link
+                  href={`/services/events/info/${event.id}`}
+                  className="mt-1 block text-xs text-gray-500 hover:underline"
+                >
+                  {event.id}
+                </Link>
               </TableCell>
               <TableCell>{event.category}</TableCell>
               <TableCell>{formatDate(event.date)}</TableCell>
