@@ -8,8 +8,13 @@ const CreatePartnerAction = () => {
   const partner = useCreatePartner();
 
   return (
-    <div className="flex justify-end">
-      <Button onClick={() => partner.setOpenModal(true)}>Create Partner</Button>
+    <div className="flex flex-wrap justify-end gap-3">
+      <Button href="/services/events/create" width="w-fit">
+        Create Partner Event
+      </Button>
+      <Button width="w-fit" onClick={() => partner.setOpenModal(true)}>
+        Create New Partner
+      </Button>
       <CreatePartnerModal
         open={partner.openModal}
         setOpen={partner.setOpenModal}

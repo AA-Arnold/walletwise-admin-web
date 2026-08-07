@@ -27,7 +27,7 @@ const EventsWrapper = () => {
           Events
         </h2>
         <Button href="/services/events/create" width="w-fit">
-          Create Events
+          Create Partner Event
         </Button>
       </div>
       <EventsTable />
