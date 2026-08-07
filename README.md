@@ -141,14 +141,16 @@ sections.
 
 Administrators can inspect users, transactions, referrals, disputes, cards,
 sessions, and activity. Partner management supports account creation, status
-changes, deletion, partner details, and partner-created events.
+changes, deletion, partner details, and partner-created events. The Partners
+page provides a general **Create Partner Event** action, while each partner row
+provides a preselected creation action for that specific partner.
 
 ### Events and tickets
 
 The Events section provides:
 
 - Paginated event listing and search
-- Event creation and editing
+- Partner event creation and event editing
 - Full event details and ticket configuration
 - Partner- and admin-created event response normalization
 - Event approval and decline workflows
@@ -166,7 +168,32 @@ Event actions behave according to the current event status:
 | `Declined` | Approve |
 
 Every event action menu also provides View, Edit, and Delete. Event names link
-directly to `/services/events/info/:eventId`.
+directly to `/services/events/info/:eventId`. Event IDs, partner names and IDs,
+and attendee names and user tags also link to their corresponding event,
+partner, or user information pages.
+
+#### Creating an event for a partner
+
+Partner events are created at `/services/events/create`. The partner selector
+is the first field and loads its options from `GET /partner`, displaying a
+skeleton while the partner list is loading. Opening the form from a partner row
+adds `?partnerId=:partnerId` and preselects that partner.
+
+The form supports:
+
+- Concert, beauty pageant, sports, conference, religion, and other categories
+- Required square thumbnail and optional event-page banner images
+- Live thumbnail and event-page previews
+- Editable ticket tier names, prices, and capacities
+- Optional headliners with images
+- Beauty-pageant prizes and contestant registration fields
+- Event schedule, venue, service fee, and refund policy
+
+Submission uses `multipart/form-data` and sends the selected partner as
+`partner_id` to `POST /partner-event`. Structured values such as ticket types,
+headliners, prizes, and form settings are JSON encoded within the multipart
+request. After a successful creation, the admin is redirected to the all-events
+page at `/services/events`.
 
 The event information query accepts both supported ticket representations:
 
@@ -184,6 +211,7 @@ GET    /events/:eventId
 PATCH  /events/:eventId
 DELETE /events/:eventId
 GET    /events/:eventId/attendees
+POST   /partner-event
 GET    /partner/:eventId/tickets
 PATCH  /partner/events/:eventId
 POST   /partner/validate-ticket

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 import { EventAdminCardProps, TicketType } from "../../types";
@@ -89,17 +90,22 @@ const EventAdminCard = ({
                 Hidden
               </span>
             )}
-            <span className="text-[10px] text-white/60 bg-black/40 px-2.5 py-1 rounded-full">
+            <Link
+              href={`/services/events/info/${data.event_id}`}
+              className="text-[10px] text-white/60 bg-black/40 px-2.5 py-1 rounded-full hover:text-white hover:underline"
+            >
               ID #{data?.id}
-            </span>
+            </Link>
           </div>
         </div>
 
         {/* Title */}
         <div className="absolute bottom-3 left-4">
-          <h2 className="text-4xl font-black tracking-wide text-white leading-none uppercase">
-            {data?.title}
-          </h2>
+          <Link href={`/services/events/info/${data.event_id}`} className="hover:underline">
+            <h2 className="text-4xl font-black tracking-wide text-white leading-none uppercase">
+              {data?.title}
+            </h2>
+          </Link>
           <p className="text-xs text-white/60 mt-1">
             {data?.date && convertDateFormat(data?.date)}
           </p>
@@ -136,9 +142,9 @@ const EventAdminCard = ({
         <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
           <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500">
             <span className="text-[11px]">Event ID:</span>
-            <span className="text-[11px] font-mono text-gray-700 dark:text-gray-200">
+            <Link href={`/services/events/info/${data.event_id}`} className="text-[11px] font-mono text-[#5c24cc] hover:underline dark:text-purple-400">
               {data?.event_id}
-            </span>
+            </Link>
           </div>
           <button
             onClick={handleCopy}
@@ -178,9 +184,9 @@ const EventAdminCard = ({
               ["Address", data?.address],
               ["Promo", data?.promo],
               ["Created By", data?.created_by_type],
-              ["Partner ID", data?.partner_id],
+              ["Partner ID", data?.partner_id, data?.partner_id ? `/manage-partner-events/info/${data.partner_id}` : undefined],
               ["Updated", formatDateTime(data?.updated_at)],
-            ].map(([label, value]) => (
+            ].map(([label, value, href]) => (
               <div
                 key={label}
                 className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 dark:border-white/10 dark:bg-white/5"
@@ -189,7 +195,7 @@ const EventAdminCard = ({
                   {label}
                 </dt>
                 <dd className="mt-1 break-words text-sm text-gray-700 dark:text-gray-200">
-                  {value || "—"}
+                  {href && value ? <Link href={href} className="text-[#5c24cc] hover:underline dark:text-purple-400">{value}</Link> : value || "—"}
                 </dd>
               </div>
             ))}

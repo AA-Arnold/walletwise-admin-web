@@ -2,10 +2,7 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { formatCreatedAt } from "@/lib/helpers/dateFormats";
 import { fetchDataProps } from "@/lib/types";
 import { CreateEventPayload, PartnerEventTicketsResponse } from "../types";
-import {
-  PartnerEventFiles,
-  PartnerEventPayload,
-} from "../types/partnerEvent";
+import { PartnerEventFiles, PartnerEventPayload } from "../types/partnerEvent";
 
 export const getEvents = async ({
   currentPage,
@@ -261,7 +258,7 @@ export const createPartnerEvent = async ({
     form.append("form_settings", JSON.stringify(payload.form_settings));
   }
 
-  const { data } = await axiosInstance.post("/partner-event", form, {
+  const { data } = await axiosInstance.post("/partner/events", form, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return data;
