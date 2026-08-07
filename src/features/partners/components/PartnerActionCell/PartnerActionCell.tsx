@@ -19,6 +19,11 @@ const PartnerActionCell = ({ partner }: { partner: Partner }) => {
             View partner details
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/services/events/create?partnerId=${partner.id}`}>
+            Create event for partner
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem
           className="text-red-500"
           onClick={(event) => {

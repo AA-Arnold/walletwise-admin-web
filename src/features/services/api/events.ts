@@ -2,6 +2,10 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { formatCreatedAt } from "@/lib/helpers/dateFormats";
 import { fetchDataProps } from "@/lib/types";
 import { CreateEventPayload, PartnerEventTicketsResponse } from "../types";
+import {
+  PartnerEventFiles,
+  PartnerEventPayload,
+} from "../types/partnerEvent";
 
 export const getEvents = async ({
   currentPage,
@@ -216,6 +220,51 @@ export const createEvent = async ({
   } catch (error) {
     throw error;
   }
+};
+
+export const createPartnerEvent = async ({
+  payload,
+  files,
+}: {
+  payload: PartnerEventPayload;
+  files: PartnerEventFiles;
+}) => {
+  const form = new FormData();
+
+  form.append("partner_id", payload.partner_id);
+  form.append("title", payload.title);
+  form.append("description", payload.description);
+  form.append("category", payload.category);
+  form.append("date", payload.date);
+  form.append("time", payload.time);
+  form.append("end_time", payload.end_time);
+  form.append("address", payload.address);
+  form.append("service_fee", String(payload.service_fee));
+  form.append("refund_policy", payload.refund_policy);
+  form.append("ticket_types", JSON.stringify(payload.ticket_types));
+  form.append("thumbnail", files.thumbnail, files.thumbnail.name);
+
+  if (files.banner) form.append("banner", files.banner, files.banner.name);
+  if (payload.headliner) {
+    form.append("headliner", JSON.stringify(payload.headliner));
+    files.headlinerImages.forEach((image) =>
+      form.append("headliner_images", image, image.name),
+    );
+  }
+  if (payload.prizes) {
+    form.append("prizes", JSON.stringify(payload.prizes));
+    files.prizeImages.forEach((image) =>
+      form.append("prize_images", image, image.name),
+    );
+  }
+  if (payload.form_settings) {
+    form.append("form_settings", JSON.stringify(payload.form_settings));
+  }
+
+  const { data } = await axiosInstance.post("/partner-event", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return data;
 };
 
 export async function updateEvent({

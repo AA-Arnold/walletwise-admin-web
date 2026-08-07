@@ -5,7 +5,7 @@ import { useTableState } from "@/lib/hooks/useTableState";
 import { getPartners } from "../api";
 import { Partner } from "../types";
 
-const getPartnerList = (response: unknown): Partner[] => {
+export const getPartnerList = (response: unknown): Partner[] => {
   if (Array.isArray(response)) return response as Partner[];
   if (!response || typeof response !== "object") return [];
 
