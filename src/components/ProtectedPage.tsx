@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { checkPermissions } from "@/lib/helpers/checkPermissions";
 import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
+import { User } from "@/features/auth/types";
 
 import MainLoader from "./atoms/MainLoader/MainLoader";
 
@@ -16,6 +17,7 @@ interface ProtectedPageProps {
   requiredPermissions: string[];
   requireAll?: boolean;
   redirectTo?: string;
+  accessOverride?: (user?: User | null) => boolean;
 }
 
 export function ProtectedPage({
@@ -23,6 +25,7 @@ export function ProtectedPage({
   requiredPermissions,
   requireAll = true,
   redirectTo = "/unauthorized",
+  accessOverride,
 }: ProtectedPageProps) {
   const router = useRouter();
   useCurrentUser();
@@ -38,11 +41,9 @@ export function ProtectedPage({
       return;
     }
 
-    const hasAccess = checkPermissions(
-      user?.permissions,
-      requiredPermissions,
-      requireAll
-    );
+    const hasAccess =
+      accessOverride?.(user) ||
+      checkPermissions(user?.permissions, requiredPermissions, requireAll);
 
     if (!hasAccess) {
       router.push(redirectTo);
@@ -54,6 +55,7 @@ export function ProtectedPage({
     requiredPermissions,
     requireAll,
     redirectTo,
+    accessOverride,
     router,
   ]);
 
@@ -65,11 +67,9 @@ export function ProtectedPage({
     return <MainLoader />;
   }
 
-  const hasAccess = checkPermissions(
-    user?.permissions,
-    requiredPermissions,
-    requireAll
-  );
+  const hasAccess =
+    accessOverride?.(user) ||
+    checkPermissions(user?.permissions, requiredPermissions, requireAll);
 
   if (!hasAccess) {
     return <MainLoader />;
