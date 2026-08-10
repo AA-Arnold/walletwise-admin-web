@@ -17,7 +17,7 @@ export const getDisplayText = (
   placeholder: string
 ): string => {
   const selectedEntries = Object.entries(selectedValues).filter(
-    ([_, value]) => value
+    ([, value]) => value,
   );
 
   if (selectedEntries.length === 0) return placeholder;

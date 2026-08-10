@@ -17,15 +17,36 @@ interface ProtectedPageProps {
   requiredPermissions: string[];
   requireAll?: boolean;
   redirectTo?: string;
-  accessOverride?: (user?: User | null) => boolean;
+  allowedUserIds?: string[];
+  allowedRoles?: string[];
+  alternativePermissions?: string[];
 }
+
+const hasExplicitAccess = (
+  user: User | null,
+  allowedUserIds?: string[],
+  allowedRoles?: string[],
+  alternativePermissions?: string[],
+) =>
+  Boolean(
+    user &&
+      (allowedUserIds?.includes(user.id) ||
+        allowedRoles?.some(
+          (role) => role.toLowerCase() === user.role_name?.trim().toLowerCase(),
+        ) ||
+        alternativePermissions?.some((permission) =>
+          user.permissions?.includes(permission),
+        )),
+  );
 
 export function ProtectedPage({
   children,
   requiredPermissions,
   requireAll = true,
   redirectTo = "/unauthorized",
-  accessOverride,
+  allowedUserIds,
+  allowedRoles,
+  alternativePermissions,
 }: ProtectedPageProps) {
   const router = useRouter();
   useCurrentUser();
@@ -42,7 +63,12 @@ export function ProtectedPage({
     }
 
     const hasAccess =
-      accessOverride?.(user) ||
+      hasExplicitAccess(
+        user,
+        allowedUserIds,
+        allowedRoles,
+        alternativePermissions,
+      ) ||
       checkPermissions(user?.permissions, requiredPermissions, requireAll);
 
     if (!hasAccess) {
@@ -55,7 +81,9 @@ export function ProtectedPage({
     requiredPermissions,
     requireAll,
     redirectTo,
-    accessOverride,
+    allowedUserIds,
+    allowedRoles,
+    alternativePermissions,
     router,
   ]);
 
@@ -68,7 +96,12 @@ export function ProtectedPage({
   }
 
   const hasAccess =
-    accessOverride?.(user) ||
+    hasExplicitAccess(
+      user,
+      allowedUserIds,
+      allowedRoles,
+      alternativePermissions,
+    ) ||
     checkPermissions(user?.permissions, requiredPermissions, requireAll);
 
   if (!hasAccess) {

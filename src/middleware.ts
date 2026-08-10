@@ -36,7 +36,7 @@ export function middleware(request: NextRequest) {
         response.cookies.delete("walletwiseToken");
         return response;
       }
-    } catch (error) {
+    } catch {
       const response = NextResponse.redirect(new URL("/login", request.url));
       response.cookies.delete("walletwiseToken");
       return response;
