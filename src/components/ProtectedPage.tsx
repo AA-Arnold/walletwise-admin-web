@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { checkPermissions } from "@/lib/helpers/checkPermissions";
 import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
+import { User } from "@/features/auth/types";
 
 import MainLoader from "./atoms/MainLoader/MainLoader";
 
@@ -16,13 +17,36 @@ interface ProtectedPageProps {
   requiredPermissions: string[];
   requireAll?: boolean;
   redirectTo?: string;
+  allowedUserIds?: string[];
+  allowedRoles?: string[];
+  alternativePermissions?: string[];
 }
+
+const hasExplicitAccess = (
+  user: User | null,
+  allowedUserIds?: string[],
+  allowedRoles?: string[],
+  alternativePermissions?: string[],
+) =>
+  Boolean(
+    user &&
+      (allowedUserIds?.includes(user.id) ||
+        allowedRoles?.some(
+          (role) => role.toLowerCase() === user.role_name?.trim().toLowerCase(),
+        ) ||
+        alternativePermissions?.some((permission) =>
+          user.permissions?.includes(permission),
+        )),
+  );
 
 export function ProtectedPage({
   children,
   requiredPermissions,
   requireAll = true,
   redirectTo = "/unauthorized",
+  allowedUserIds,
+  allowedRoles,
+  alternativePermissions,
 }: ProtectedPageProps) {
   const router = useRouter();
   useCurrentUser();
@@ -38,11 +62,14 @@ export function ProtectedPage({
       return;
     }
 
-    const hasAccess = checkPermissions(
-      user?.permissions,
-      requiredPermissions,
-      requireAll
-    );
+    const hasAccess =
+      hasExplicitAccess(
+        user,
+        allowedUserIds,
+        allowedRoles,
+        alternativePermissions,
+      ) ||
+      checkPermissions(user?.permissions, requiredPermissions, requireAll);
 
     if (!hasAccess) {
       router.push(redirectTo);
@@ -54,6 +81,9 @@ export function ProtectedPage({
     requiredPermissions,
     requireAll,
     redirectTo,
+    allowedUserIds,
+    allowedRoles,
+    alternativePermissions,
     router,
   ]);
 
@@ -65,11 +95,14 @@ export function ProtectedPage({
     return <MainLoader />;
   }
 
-  const hasAccess = checkPermissions(
-    user?.permissions,
-    requiredPermissions,
-    requireAll
-  );
+  const hasAccess =
+    hasExplicitAccess(
+      user,
+      allowedUserIds,
+      allowedRoles,
+      alternativePermissions,
+    ) ||
+    checkPermissions(user?.permissions, requiredPermissions, requireAll);
 
   if (!hasAccess) {
     return <MainLoader />;
