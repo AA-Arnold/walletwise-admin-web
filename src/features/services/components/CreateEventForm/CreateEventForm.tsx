@@ -7,6 +7,7 @@ import Input from "@/components/atoms/Input/Input";
 import Label from "@/components/atoms/Label/Label";
 import Select from "@/components/atoms/Select/Select";
 import Textarea from "@/components/atoms/TextArea/Textarea";
+import CurrencyInput from "@/components/atoms/CurrencyInput/CurrencyInput";
 import PartnerSelectField from "../PartnerSelectField/PartnerSelectField";
 import PartnerTicketFields from "../PartnerTicketFields/PartnerTicketFields";
 import EventFileField from "../EventFileField/EventFileField";
@@ -29,8 +30,8 @@ const customInputOptions = ["text", "number", "date", "file"].map((type) => ({
   value: type,
 }));
 
-const CreateEventForm = () => {
-  const event = useCreatePartnerEvent();
+const CreateEventForm = ({ eventId }: { eventId?: string }) => {
+  const event = useCreatePartnerEvent(eventId);
   const { form } = event;
 
   return (
@@ -39,10 +40,12 @@ const CreateEventForm = () => {
       className="grid w-full items-start gap-8 xl:grid-cols-[minmax(0,1fr)_22rem]"
     >
       <div className="max-w-158 space-y-8">
-        <PartnerSelectField
-          value={form.partner_id}
-          onChange={(value) => event.setField("partner_id", value)}
-        />
+        {!event.isEdit && (
+          <PartnerSelectField
+            value={form.partner_id}
+            onChange={(value) => event.setField("partner_id", value)}
+          />
+        )}
 
         <section className="space-y-5">
           <h2 className="font-medium">Event details</h2>
@@ -184,14 +187,10 @@ const CreateEventForm = () => {
 
         <div className="space-y-2">
           <Label title="Service fee (₦)" />
-          <Input
-            type="number"
+          <CurrencyInput
             name="service_fee"
-            value={form.service_fee || ""}
-            onChange={(e) =>
-              event.setField("service_fee", Number(e.target.value))
-            }
-            placeholder="0"
+            value={form.service_fee}
+            onValueChange={(value) => event.setField("service_fee", value)}
           />
         </div>
         <div className="space-y-2">
@@ -206,7 +205,7 @@ const CreateEventForm = () => {
         </div>
 
         <Button width="w-full sm:w-fit" type="submit" loading={event.isPending}>
-          Publish Partner Event
+          {event.isEdit ? "Update Partner Event" : "Publish Partner Event"}
         </Button>
       </div>
 

@@ -12,6 +12,7 @@ interface InputProps {
   showPassword?: "text" | "password";
   onTogglePassword?: () => void;
   disable?: boolean;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 }
 
 const Input = ({
@@ -24,6 +25,7 @@ const Input = ({
   icon,
   name,
   disable = false,
+  inputMode,
 }: InputProps) => {
   const paddingX =
     icon !== undefined && showPassword !== undefined
@@ -44,6 +46,7 @@ const Input = ({
         onChange={onChange}
         name={name}
         disabled={disable}
+        inputMode={inputMode}
         className={`w-full bg-inherit h-full placeholder-gray-400 dark:placeholder-gray-600 outline-none ${paddingX}`}
         placeholder={placeholder}
       />

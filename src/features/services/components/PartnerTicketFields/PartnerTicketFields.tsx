@@ -4,6 +4,8 @@ import { memo, useState } from "react";
 
 import Input from "@/components/atoms/Input/Input";
 import Label from "@/components/atoms/Label/Label";
+import CurrencyInput from "@/components/atoms/CurrencyInput/CurrencyInput";
+import { formatNaira } from "@/lib/helpers/currency";
 import { PartnerEventTicketType } from "../../types/partnerEvent";
 
 interface Props {
@@ -22,14 +24,14 @@ const PartnerTicketFields = memo(function PartnerTicketFields({ tickets, onChang
       <div className="space-y-3">
         {tickets.map((ticket, index) => confirmed.includes(index) ? (
           <div key={index} className="mb-2 flex items-center justify-between rounded border bg-gray-50 px-3 py-2">
-            <div className="flex items-center gap-4"><span className="text-sm font-medium capitalize">{ticket.type}</span><span className="text-sm text-gray-500">₦{ticket.price}</span><span className="text-sm text-gray-500">{ticket.capacity} slots</span></div>
+            <div className="flex items-center gap-4"><span className="text-sm font-medium capitalize">{ticket.type}</span><span className="text-sm text-gray-500">{formatNaira(ticket.price)}</span><span className="text-sm text-gray-500">{ticket.capacity.toLocaleString()} slots</span></div>
             <div className="flex items-center gap-2"><button type="button" onClick={() => setConfirmed((current) => current.filter((item) => item !== index))} className="text-xs text-blue-500">Edit</button>{index !== 0 && <button type="button" onClick={() => onRemove(index)} aria-label="Remove ticket">×</button>}</div>
           </div>
         ) : (
           <div key={index} className="grid grid-cols-2 gap-2">
             <div className="w-full space-y-2"><Label title="Name" /><Input type="text" name="name" placeholder="Ticket name (e.g. Early Bird)" value={ticket.type} onChange={(e) => onChange(index, "type", e.target.value)} /></div>
             <div className="flex items-center gap-2">
-              <div className="w-full flex-1 space-y-2"><Label title="Price (₦)" /><Input type="number" name="price" placeholder="0" value={ticket.price || ""} onChange={(e) => onChange(index, "price", Number(e.target.value))} /></div>
+              <div className="w-full flex-1 space-y-2"><Label title="Price (₦)" /><CurrencyInput name="price" value={ticket.price} onValueChange={(value) => onChange(index, "price", value)} /></div>
               <div className="w-full flex-1 space-y-2"><Label title="Capacity" /><Input type="text" name="capacity" placeholder="0" value={ticket.capacity || ""} onChange={(e) => onChange(index, "capacity", Number(e.target.value))} /></div>
               <button type="button" onClick={() => ticket.type.trim() && ticket.capacity > 0 && setConfirmed((current) => [...current, index])} className="mt-6 flex h-6 items-center justify-center rounded bg-[#6637CF] px-3 text-sm text-white">Add</button>
               {index !== 0 && <button type="button" onClick={() => onRemove(index)} className="mt-6">×</button>}

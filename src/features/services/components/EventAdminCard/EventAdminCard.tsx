@@ -5,7 +5,11 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { EventAdminCardProps, TicketType } from "../../types";
-import { convertDateFormat } from "@/lib/helpers/dateFormats";
+import {
+  convertDateFormat,
+  formatEventDate,
+  formatEventTime,
+} from "@/lib/helpers/dateFormats";
 import { totalTickets } from "../../helpers/totalTickets";
 import { numberWithCommas } from "@/lib/helpers";
 
@@ -174,9 +178,9 @@ const EventAdminCard = ({
             {[
               ["Category", data?.category],
               ["Status", data?.status],
-              ["Start Date", formatDateTime(data?.date)],
-              ["Start Time", formatDateTime(data?.time)],
-              ["End Time", formatDateTime(data?.end_time)],
+              ["Event Date", formatEventDate(data?.date)],
+              ["Start Time", formatEventTime(data?.time)],
+              ["End Time", formatEventTime(data?.end_time)],
               [
                 "Service Fee",
                 data?.service_fee ? `${data.service_fee}%` : "—",
