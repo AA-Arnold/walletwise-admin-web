@@ -6,6 +6,7 @@ import { Clock3, MapPin } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { PartnerEventPayload } from "../../types/partnerEvent";
+import { formatNaira } from "@/lib/helpers/currency";
 
 interface Props {
   form: PartnerEventPayload;
@@ -51,7 +52,7 @@ const PartnerEventImageGuide = ({ form, thumbnailPreview, bannerPreview }: Props
                 </div>
                 <h3 className="mt-3 truncate font-semibold text-[#262626]">{form.title || "Your event title"}</h3>
                 <p className="mt-1 truncate text-sm font-medium text-[#737373]">{form.date || "Event date"}, {form.address || "Event venue"}</p>
-                <p className="mt-1 text-sm font-medium text-[#737373]">{firstTicket?.price ? `₦${firstTicket.price.toLocaleString()}` : "Ticket price"}</p>
+                <p className="mt-1 text-sm font-medium text-[#737373]">{firstTicket?.price ? `${formatNaira(firstTicket.price)} per ticket` : "Ticket price"}</p>
               </div>
             ) : (
               <div className="relative aspect-video overflow-hidden rounded-xl bg-[#D4D4D4]">

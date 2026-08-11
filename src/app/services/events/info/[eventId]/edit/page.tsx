@@ -12,7 +12,7 @@ const EditEventPage = ({
 }) => {
   const { eventId } = use(params);
   return (
-    <DashboardLayout title="Event Info">
+    <DashboardLayout title="Edit Partner Event">
       <EditEventInfoWrapper eventId={eventId} />
     </DashboardLayout>
   );

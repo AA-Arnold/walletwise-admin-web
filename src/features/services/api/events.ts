@@ -226,9 +226,22 @@ export const createPartnerEvent = async ({
   payload: PartnerEventPayload;
   files: PartnerEventFiles;
 }) => {
+  const form = buildPartnerEventFormData(payload, files, true);
+
+  const { data } = await axiosInstance.post("/partner/events", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return data;
+};
+
+export const buildPartnerEventFormData = (
+  payload: PartnerEventPayload,
+  files: PartnerEventFiles,
+  includePartnerId = false,
+) => {
   const form = new FormData();
 
-  form.append("partner_id", payload.partner_id);
+  if (includePartnerId) form.append("partner_id", payload.partner_id);
   form.append("title", payload.title);
   form.append("description", payload.description);
   form.append("category", payload.category);
@@ -239,7 +252,9 @@ export const createPartnerEvent = async ({
   form.append("service_fee", String(payload.service_fee));
   form.append("refund_policy", payload.refund_policy);
   form.append("ticket_types", JSON.stringify(payload.ticket_types));
-  form.append("thumbnail", files.thumbnail, files.thumbnail.name);
+  if (files.thumbnail) {
+    form.append("thumbnail", files.thumbnail, files.thumbnail.name);
+  }
 
   if (files.banner) form.append("banner", files.banner, files.banner.name);
   if (payload.headliner) {
@@ -258,38 +273,26 @@ export const createPartnerEvent = async ({
     form.append("form_settings", JSON.stringify(payload.form_settings));
   }
 
-  const { data } = await axiosInstance.post("/partner/events", form, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return data;
+  return form;
 };
 
-export async function updateEvent({
+export const updatePartnerEvent = async ({
   eventId,
   payload,
+  files,
 }: {
   eventId: string;
-  payload: Partial<CreateEventPayload>;
-}) {
-  const form = new FormData();
-
-  if (payload.title) form.append("title", payload.title);
-  if (payload.date) form.append("date", payload.date);
-  if (payload.time) form.append("time", payload.time);
-  if (payload.address) form.append("address", payload.address);
-  if (payload.description) form.append("description", payload.description);
-  if (payload.promo) form.append("promo", payload.promo);
-  if (payload.image) form.append("image", payload.image, payload.image.name);
-  if (payload.ticket_types)
-    form.append("ticket_types", JSON.stringify(payload.ticket_types));
-
-  const url = `/events/${eventId}`;
-  const { data } = await axiosInstance.patch(url, form, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-
+  payload: PartnerEventPayload;
+  files: PartnerEventFiles;
+}) => {
+  const form = buildPartnerEventFormData(payload, files);
+  const { data } = await axiosInstance.patch(
+    `/partner/events/${eventId}`,
+    form,
+    { headers: { "Content-Type": "multipart/form-data" } },
+  );
   return data;
-}
+};
 
 export const getEventAttendees = async ({
   currentPage,

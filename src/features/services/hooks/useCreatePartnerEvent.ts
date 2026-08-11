@@ -1,12 +1,15 @@
-import { SubmitEvent, useCallback, useEffect, useState } from "react";
+import { SubmitEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { ApiErrorResponse } from "@/lib/types";
 import { promiseErrorFunction } from "@/lib/helpers/promiseError";
-import { createPartnerEvent } from "../api/events";
+import { createPartnerEvent, updatePartnerEvent } from "../api/events";
+import { useGetEventInfo } from "./useGetEventInfo";
+import { formatDateForInput, formatTimeForInput } from "../helpers/events";
 import {
+  PARTNER_EVENT_CATEGORIES,
   PartnerEventCategory,
   PartnerEventCustomField,
   PartnerEventPayload,
@@ -34,10 +37,21 @@ const initialPayload: PartnerEventPayload = {
   ticket_types: [{ type: "Regular", price: 0, capacity: 0 }],
 };
 
-export const useCreatePartnerEvent = () => {
+type ExistingNamedImage = {
+  artist_name?: string;
+  name?: string;
+  description?: string;
+  image_url?: string;
+  image?: string;
+};
+
+export const useCreatePartnerEvent = (eventId?: string) => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const isEdit = Boolean(eventId);
+  const eventQuery = useGetEventInfo(eventId || "", isEdit);
+  const hydratedEventId = useRef<string | null>(null);
   const [form, setForm] = useState(initialPayload);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
@@ -50,10 +64,72 @@ export const useCreatePartnerEvent = () => {
   );
 
   useEffect(() => {
+    if (isEdit) return;
     const partnerId = searchParams.get("partnerId");
     if (partnerId)
       setForm((current) => ({ ...current, partner_id: partnerId }));
-  }, [searchParams]);
+  }, [isEdit, searchParams]);
+
+  useEffect(() => {
+    if (!eventId || !eventQuery.data?.event || hydratedEventId.current === eventId) return;
+
+    const existing = eventQuery.data.event as Record<string, unknown>;
+    const ticketTypes = existing.ticket_types as Record<
+      string,
+      { price?: number; quantity?: number; capacity?: number }
+    > | undefined;
+    const mappedTickets = Object.entries(ticketTypes || {}).map(
+      ([type, ticket]) => ({
+        type,
+        price: Number(ticket.price || 0),
+        capacity: Number(ticket.capacity ?? ticket.quantity ?? 0),
+      }),
+    );
+    const category = PARTNER_EVENT_CATEGORIES.includes(
+      existing.category as PartnerEventCategory,
+    )
+      ? (existing.category as PartnerEventCategory)
+      : "Others";
+
+    setForm({
+      partner_id: String(existing.partner_id || ""),
+      title: String(existing.title || ""),
+      description: String(existing.description || ""),
+      category,
+      date: formatDateForInput(existing.date as string) || "",
+      time: formatTimeForInput(existing.time as string) || "",
+      end_time: formatTimeForInput(existing.end_time as string) || "",
+      address: String(existing.address || ""),
+      service_fee: Number(existing.service_fee || 0),
+      refund_policy: String(existing.refund_policy || ""),
+      ticket_types: mappedTickets.length
+        ? mappedTickets
+        : [{ type: "Regular", price: 0, capacity: 0 }],
+    });
+
+    setThumbnailPreview(String(existing.image_url || existing.thumbnail_url || "") || null);
+    setBannerPreview(String(existing.banner_image_url || existing.banner_url || "") || null);
+
+    const existingHeadliners = (existing.headliner || existing.headliners || []) as ExistingNamedImage[];
+    setHeadliners(existingHeadliners.map((item) => ({
+      name: item.artist_name || item.name || "",
+      image: null,
+      preview: item.image_url || item.image || null,
+    })));
+    const existingPrizes = (existing.prizes || []) as ExistingNamedImage[];
+    setPrizes(existingPrizes.map((item) => ({
+      name: item.name || "",
+      description: item.description || "",
+      image: null,
+      preview: item.image_url || item.image || null,
+    })));
+
+    const formSettings = existing.form_settings as
+      | { custom_fields?: PartnerEventCustomField[] }
+      | undefined;
+    setCustomFields(formSettings?.custom_fields || []);
+    hydratedEventId.current = eventId;
+  }, [eventId, eventQuery.data]);
 
   const setField = useCallback(
     <K extends keyof PartnerEventPayload>(
@@ -159,11 +235,38 @@ export const useCreatePartnerEvent = () => {
   );
 
   const { mutate, isPending } = useMutation({
-    mutationFn: createPartnerEvent,
-    onSuccess: () => {
-      toast.success("Partner event successfully created");
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["partners"] });
+    mutationFn: (variables: {
+      payload: PartnerEventPayload;
+      files: {
+        thumbnail: File | null;
+        banner: File | null;
+        headlinerImages: File[];
+        prizeImages: File[];
+      };
+    }) =>
+      eventId
+        ? updatePartnerEvent({ eventId, ...variables })
+        : createPartnerEvent(variables),
+    onSuccess: async () => {
+      toast.success(
+        isEdit
+          ? "Partner event successfully updated"
+          : "Partner event successfully created",
+      );
+      const invalidations = [
+        queryClient.invalidateQueries({ queryKey: ["events"] }),
+        queryClient.invalidateQueries({ queryKey: ["partners"] }),
+        queryClient.invalidateQueries({ queryKey: ["partner info"] }),
+      ];
+      if (eventId) {
+        invalidations.push(
+          queryClient.invalidateQueries({
+            queryKey: ["event info", eventId],
+            refetchType: "all",
+          }),
+        );
+      }
+      await Promise.all(invalidations);
       setForm(initialPayload);
       setThumbnail(null);
       setThumbnailPreview(null);
@@ -172,7 +275,11 @@ export const useCreatePartnerEvent = () => {
       setHeadliners([]);
       setPrizes([]);
       setCustomFields([]);
-      router.push("/services/events");
+      router.push(
+        isEdit && eventId
+          ? `/services/events/info/${eventId}`
+          : "/services/events",
+      );
     },
     onError: (error: ApiErrorResponse) => promiseErrorFunction(error),
   });
@@ -181,7 +288,7 @@ export const useCreatePartnerEvent = () => {
     (event: SubmitEvent<HTMLFormElement>) => {
       event.preventDefault();
       const requiredValues = [
-        form.partner_id,
+        ...(isEdit ? [] : [form.partner_id]),
         form.title,
         form.description,
         form.date,
@@ -193,7 +300,7 @@ export const useCreatePartnerEvent = () => {
         toast.error("Please complete all required event fields.");
         return;
       }
-      if (!thumbnail) {
+      if (!isEdit && !thumbnail) {
         toast.error("Thumbnail image is required.");
         return;
       }
@@ -242,7 +349,7 @@ export const useCreatePartnerEvent = () => {
         },
       });
     },
-    [banner, customFields, form, headliners, mutate, prizes, thumbnail],
+    [banner, customFields, form, headliners, isEdit, mutate, prizes, thumbnail],
   );
 
   return {
@@ -266,5 +373,7 @@ export const useCreatePartnerEvent = () => {
     removeTicket,
     handleSubmit,
     isPending,
+    isLoading: eventQuery.isLoading,
+    isEdit,
   };
 };

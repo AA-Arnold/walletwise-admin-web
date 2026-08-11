@@ -44,7 +44,7 @@ export interface PartnerEventPayload {
 }
 
 export interface PartnerEventFiles {
-  thumbnail: File;
+  thumbnail: File | null;
   banner: File | null;
   headlinerImages: File[];
   prizeImages: File[];

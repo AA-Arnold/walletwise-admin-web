@@ -29,6 +29,39 @@ export function formatTime(dateString: string) {
   return new Intl.DateTimeFormat("en-US", options).format(date);
 }
 
+export const formatEventDate = (value?: string | null) => {
+  if (!value) return "—";
+
+  const dateOnly = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const date = dateOnly
+    ? new Date(
+        Number(dateOnly[1]),
+        Number(dateOnly[2]) - 1,
+        Number(dateOnly[3]),
+      )
+    : new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("en-NG", { dateStyle: "medium" }).format(
+    date,
+  );
+};
+
+export const formatEventTime = (value?: string | null) => {
+  if (!value) return "—";
+
+  const time = value.match(/(?:T|^)(\d{1,2}):(\d{2})/);
+  if (!time) return "—";
+
+  const date = new Date(2000, 0, 1, Number(time[1]), Number(time[2]));
+  return new Intl.DateTimeFormat("en-NG", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+};
+
 export const formatFilterDate = (date: Date): string => {
   return date.toLocaleDateString("en-US", {
     month: "short",
